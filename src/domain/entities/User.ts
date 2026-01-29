@@ -5,4 +5,5 @@ export interface User {
   email: string;
   role: UserRole;
   credits_balance: number;
+  is_premium: boolean;
 }

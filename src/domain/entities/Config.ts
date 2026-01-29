@@ -4,11 +4,15 @@ export interface FeatureConfig {
   hires_fix: 'enabled' | 'disabled' | 'premium';
   lora: 'enabled' | 'disabled' | 'premium';
   refiner: 'enabled' | 'disabled' | 'premium';
+  history: 'enabled' | 'disabled' | 'premium';
+  custom_resolutions: 'enabled' | 'disabled' | 'premium';
 }
 
 export const DEFAULT_FEATURE_CONFIG: FeatureConfig = {
   text_to_image: 'enabled',
   hires_fix: 'premium',
   lora: 'premium',
-  refiner: 'disabled'
+  refiner: 'disabled',
+  history: 'premium',
+  custom_resolutions: 'premium'
 };

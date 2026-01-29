@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { User } from "@/domain/entities/User";
-import { getUsersAction, addCreditsAction } from "@/app/actions/admin";
+import { getUsersAction, addCreditsAction, togglePremiumAction } from "@/app/actions/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, Crown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -40,6 +41,13 @@ export default function AdminUsersPage() {
     loadUsers(); // refresh
   }
 
+  async function handleTogglePremium(user: User) {
+    setProcessingId(user.id);
+    await togglePremiumAction(user.id, !user.is_premium);
+    setProcessingId(null);
+    loadUsers();
+  }
+
   return (
     <div className="container mx-auto p-8">
       <Card>
@@ -53,17 +61,30 @@ export default function AdminUsersPage() {
                 <tr>
                    <th className="p-4 text-left font-medium">Email</th>
                    <th className="p-4 text-left font-medium">Role</th>
+                   <th className="p-4 text-left font-medium">Type</th>
                    <th className="p-4 text-left font-medium">Credits</th>
                    <th className="p-4 text-right font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                    <tr><td colSpan={4} className="p-4 text-center">Loading users...</td></tr>
+                    <tr><td colSpan={5} className="p-4 text-center">Loading users...</td></tr>
                 ) : users.map(user => (
                   <tr key={user.id} className="border-b last:border-0 hover:bg-muted/10">
                     <td className="p-4">{user.email}</td>
                     <td className="p-4 bg-muted/20 font-mono text-xs">{user.role}</td>
+                    <td className="p-4">
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className={user.is_premium ? "text-yellow-600 bg-yellow-100 hover:bg-yellow-200" : "text-muted-foreground"}
+                            onClick={() => handleTogglePremium(user)}
+                            disabled={processingId === user.id}
+                        >
+                            {user.is_premium ? <Crown className="w-4 h-4 mr-1 text-yellow-600 fill-yellow-600" /> : <Crown className="w-4 h-4 mr-1" />}
+                            {user.is_premium ? "Premium" : "Free"}
+                        </Button>
+                    </td>
                     <td className="p-4 font-bold text-green-500">{user.credits_balance}</td>
                     <td className="p-4 flex justify-end items-center gap-2">
                       <Input 

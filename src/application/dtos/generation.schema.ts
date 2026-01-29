@@ -6,10 +6,10 @@ export const CreateGenerationSchema = z.object({
   negative_prompt: z.string().optional(),
   width: z.number().int().min(512).max(1536),
   height: z.number().int().min(512).max(1536),
-  steps: z.number().int().min(10).max(50).default(30),
-  cfg: z.number().min(1).max(20).default(7),
+  steps: z.number().int().min(10).max(50),
+  cfg: z.number().min(1).max(20),
   seed: z.number().int().optional(), // Optional for FE (randomized by BE if missing)
-  batch_size: z.number().int().min(1).max(4).default(1),
+  batch_size: z.number().int().min(1).max(4),
 });
 
 // 2. TypeScript Type (Inferred) - For FE Props / Component State

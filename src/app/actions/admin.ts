@@ -55,3 +55,27 @@ export async function addCreditsAction(targetUserId: string, amount: number): Pr
     return { success: false, error: e.message };
   }
 }
+export async function togglePremiumAction(targetUserId: string, isPremium: boolean): Promise<ApiResponse<void>> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Admin Check
+    const { data: requesterProfile } = await supabase
+       .from('profiles')
+       .select('role')
+       .eq('id', user?.id)
+       .single();
+       
+    if (!requesterProfile || (requesterProfile.role !== 'admin' && requesterProfile.role !== 'superadmin')) {
+        return { success: false, error: "Unauthorized access" };
+    }
+
+    const repo = new SupabaseUserRepository();
+    await repo.update(targetUserId, { is_premium: isPremium });
+    
+    return { success: true, data: undefined };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}

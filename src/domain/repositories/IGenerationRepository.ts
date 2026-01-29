@@ -9,6 +9,8 @@ export interface IGenerationRepository {
   saveImages(images: GeneratedImageDto[]): Promise<void>;
   
   getImagesByJobId(jobId: string): Promise<GeneratedImageDto[]>;
+  getImagesByUserId(userId: string, limit?: number): Promise<GeneratedImageDto[]>;
+  getJobsByUserId(userId: string): Promise<GenerationJob[]>;
 }
 
 export interface GeneratedImageDto {

@@ -133,6 +133,16 @@ export default function ConfigurationPage() {
             value={config.refiner} 
             onChange={(v) => updateField('refiner', v)}
           />
+          <FeatureSelect 
+            label="History & Gallery" 
+            value={config.history} 
+            onChange={(v) => updateField('history', v)}
+          />
+          <FeatureSelect 
+            label="Custom Resolutions" 
+            value={config.custom_resolutions} 
+            onChange={(v) => updateField('custom_resolutions', v)}
+          />
         </CardContent>
       </Card>
       

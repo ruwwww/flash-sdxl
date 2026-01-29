@@ -16,7 +16,8 @@ export class SupabaseUserRepository implements IUserRepository {
       id: data.id,
       email: data.email,
       role: data.role,
-      credits_balance: data.credits_balance
+      credits_balance: data.credits_balance,
+      is_premium: data.is_premium || false
     };
   }
 
@@ -27,8 +28,14 @@ export class SupabaseUserRepository implements IUserRepository {
       id: row.id,
       email: row.email,
       role: row.role,
-      credits_balance: row.credits_balance
+      credits_balance: row.credits_balance,
+      is_premium: row.is_premium || false
     })) : [];
+  }
+
+  async update(id: string, partial: Partial<User>): Promise<void> {
+    const supabase = await createClient();
+    await supabase.from('profiles').update(partial).eq('id', id);
   }
 
   async deductCredits(id: string, amount: number): Promise<void> {

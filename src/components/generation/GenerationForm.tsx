@@ -10,8 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GenerationJobResponse } from "@/application/dtos/generation.schema";
+import { getSystemConfigsAction } from "@/app/actions/config";
+import { FeatureConfig } from "@/domain/entities/Config";
+import { createClient } from "@/supabase/client";
 
 interface GenerationFormProps {
   onSuccess: (job: GenerationJobResponse) => void;
@@ -19,6 +22,8 @@ interface GenerationFormProps {
 
 export function GenerationForm({ onSuccess }: GenerationFormProps) {
   const [error, setError] = useState<string | null>(null);
+  const [config, setConfig] = useState<FeatureConfig | null>(null);
+  const [isPremium, setIsPremium] = useState<boolean>(false);
   const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue } = useForm<CreateGenerationInput>({
     resolver: zodResolver(CreateGenerationSchema),
     defaultValues: {
@@ -32,8 +37,48 @@ export function GenerationForm({ onSuccess }: GenerationFormProps) {
     }
   });
 
+  useEffect(() => {
+    // Load config and user status
+    async function loadConfig() {
+      const configRes = await getSystemConfigsAction();
+      if (configRes.success) {
+        setConfig(configRes.data);
+      }
+
+      // Check if user is premium
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('is_premium, role').eq('id', user.id).single();
+        setIsPremium(profile?.is_premium || profile?.role === 'admin' || profile?.role === 'superadmin' || false);
+      }
+    }
+    loadConfig();
+
+    // Load reproduce params from localStorage
+    const reproduceParams = localStorage.getItem('reproduceParams');
+    if (reproduceParams) {
+      try {
+        const params = JSON.parse(reproduceParams);
+        Object.keys(params).forEach(key => {
+          if (params[key] !== undefined) {
+            setValue(key as keyof CreateGenerationInput, params[key]);
+          }
+        });
+        localStorage.removeItem('reproduceParams');
+      } catch (e) {
+        console.error('Failed to parse reproduce params', e);
+      }
+    }
+  }, [setValue]);
+
   const steps = watch('steps');
   const cfg = watch('cfg');
+
+  const allowCustomResolutions = config && (
+    config.custom_resolutions === 'enabled' || 
+    (config.custom_resolutions === 'premium' && isPremium)
+  );
 
   const onSubmit = async (data: CreateGenerationInput) => {
     setError(null);
@@ -76,32 +121,74 @@ export function GenerationForm({ onSuccess }: GenerationFormProps) {
             />
           </div>
 
-          {/* Dimensions (Simplified as Grid for MVP) */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Width</Label>
-              <select 
-                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                {...register("width", { valueAsNumber: true })}
-              >
-                <option value={1024}>1024</option>
-                <option value={896}>896</option>
-                <option value={768}>768</option>
-                <option value={512}>512</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-               <Label>Height</Label>
-               <select 
-                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                {...register("height", { valueAsNumber: true })}
-              >
-                <option value={1024}>1024</option>
-                <option value={1152}>1152</option>
-                <option value={768}>768</option>
-                <option value={512}>512</option>
-              </select>
-            </div>
+          {/* Dimensions */}
+          <div className="space-y-2">
+            <Label>Resolution</Label>
+            {allowCustomResolutions ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="width" className="text-sm">Width</Label>
+                  <select 
+                    id="width"
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    {...register("width", { valueAsNumber: true })}
+                  >
+                    <option value={512}>512</option>
+                    <option value={768}>768</option>
+                    <option value={832}>832</option>
+                    <option value={896}>896</option>
+                    <option value={1024}>1024</option>
+                    <option value={1152}>1152</option>
+                    <option value={1216}>1216</option>
+                    <option value={1536}>1536</option>
+                  </select>
+                  {errors.width && <span className="text-destructive text-sm">{errors.width.message}</span>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="height" className="text-sm">Height</Label>
+                  <select 
+                    id="height"
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    {...register("height", { valueAsNumber: true })}
+                  >
+                    <option value={512}>512</option>
+                    <option value={768}>768</option>
+                    <option value={832}>832</option>
+                    <option value={896}>896</option>
+                    <option value={1024}>1024</option>
+                    <option value={1152}>1152</option>
+                    <option value={1216}>1216</option>
+                    <option value={1536}>1536</option>
+                  </select>
+                  {errors.height && <span className="text-destructive text-sm">{errors.height.message}</span>}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <select 
+                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '1024x1024') {
+                      setValue("width", 1024);
+                      setValue("height", 1024);
+                    } else if (value === '832x1216') {
+                      setValue("width", 832);
+                      setValue("height", 1216);
+                    } else if (value === '1216x832') {
+                      setValue("width", 1216);
+                      setValue("height", 832);
+                    }
+                  }}
+                >
+                  <option value="1024x1024">1024x1024 (Square)</option>
+                  <option value="832x1216">832x1216 (Portrait)</option>
+                  <option value="1216x832">1216x832 (Landscape)</option>
+                </select>
+                <input type="hidden" {...register("width", { valueAsNumber: true })} />
+                <input type="hidden" {...register("height", { valueAsNumber: true })} />
+              </div>
+            )}
           </div>
 
           {/* Steps */}
@@ -132,11 +219,21 @@ export function GenerationForm({ onSuccess }: GenerationFormProps) {
             />
           </div>
 
-          {error && (
-            <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">
-              {error}
-            </div>
-          )}
+          {/* Batch Size */}
+          <div className="space-y-2">
+            <Label htmlFor="batch_size">Batch Size</Label>
+            <select 
+              id="batch_size"
+              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              {...register("batch_size", { valueAsNumber: true })}
+            >
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+              <option value={4}>4</option>
+            </select>
+            {errors.batch_size && <span className="text-destructive text-sm">{errors.batch_size.message}</span>}
+          </div>
           
         </form>
       </CardContent>

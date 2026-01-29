@@ -9,9 +9,10 @@ import Image from "next/image";
 
 interface ImageViewerProps {
   jobId: string | null;
+  onCompleted?: () => void;
 }
 
-export function ImageViewer({ jobId }: ImageViewerProps) {
+export function ImageViewer({ jobId, onCompleted }: ImageViewerProps) {
   const [status, setStatus] = useState<JobStatusOutput | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -33,6 +34,9 @@ export function ImageViewer({ jobId }: ImageViewerProps) {
                if (res.data.status === 'COMPLETED' || res.data.status === 'FAILED') {
                  clearInterval(interval);
                  setLoading(false);
+                 if (res.data.status === 'COMPLETED' && onCompleted) {
+                    onCompleted();
+                 }
                }
             }
          });

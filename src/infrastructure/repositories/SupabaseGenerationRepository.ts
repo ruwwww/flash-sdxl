@@ -29,6 +29,52 @@ export class SupabaseGenerationRepository implements IGenerationRepository {
     }));
   }
 
+  async getImagesByUserId(userId: string, limit = 50): Promise<GeneratedImageDto[]> {
+    const supabase = await this.getClient();
+    // Join with generation table if we want to sort by latest job, 
+    // or assume we sort by generated_images created_at
+    const { data } = await supabase
+      .from('generated_images')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (!data) return [];
+
+    return data.map(row => ({
+      generationId: row.generation_id,
+      userId: row.user_id,
+      storagePath: row.storage_path,
+      seed: row.seed
+    }));
+  }
+
+  async getJobsByUserId(userId: string): Promise<GenerationJob[]> {
+    const supabase = await this.getClient();
+    const { data } = await supabase
+      .from('generations')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (!data) return [];
+
+    return data.map(row => ({
+      id: row.id,
+      userId: row.user_id,
+      prompt: row.prompt,
+      negativePrompt: row.negative_prompt,
+      params: row.params,
+      status: row.status,
+      cost: row.cost,
+      createdAt: new Date(row.created_at),
+      errorMessage: row.error_message,
+      durationMs: row.duration_ms,
+      completedAt: row.completed_at ? new Date(row.completed_at) : undefined
+    }));
+  }
+
   async create(job: Omit<GenerationJob, 'id' | 'createdAt' | 'status'>): Promise<GenerationJob> {
     const supabase = await this.getClient();
     

@@ -3,32 +3,40 @@
 import { useState } from "react";
 import { GenerationForm } from "@/components/generation/GenerationForm";
 import { ImageViewer } from "@/components/generation/ImageViewer";
+import { HistoryGallery } from "@/components/generation/HistoryGallery";
+import { QueuedJobs } from "@/components/generation/QueuedJobs";
 import { GenerationJobResponse } from "@/application/dtos/generation.schema";
 
 export default function GeneratePage() {
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  const [historyKey, setHistoryKey] = useState(0);
 
   const handleGenerationStarted = (job: GenerationJobResponse) => {
     setCurrentJobId(job.id);
   };
 
+  const handleGenerationCompleted = () => {
+    setHistoryKey(prev => prev + 1);
+  };
+
   return (
-    <div className="container mx-auto max-w-[1600px] h-screen pt-20 pb-4">
+    <div className="container mx-auto max-w-[1800px] h-screen pt-20 pb-4">
       <div className="grid grid-cols-12 gap-6 h-full">
         {/* Left Panel: Controls */}
-        <div className="col-span-12 lg:col-span-3 h-full overflow-y-auto pr-2">
-           <GenerationForm onSuccess={handleGenerationStarted} />
+        <div className="col-span-12 lg:col-span-3 space-y-6">
+          <GenerationForm onSuccess={handleGenerationStarted} />
+          <QueuedJobs />
         </div>
 
         {/* Right Panel: Viewer */}
         <div className="col-span-12 lg:col-span-9 h-full flex flex-col gap-4">
            <div className="flex-1 min-h-0">
-             <ImageViewer jobId={currentJobId} />
+             <ImageViewer jobId={currentJobId} onCompleted={handleGenerationCompleted} />
            </div>
            
-           {/* Bottom Strip (Placeholder for History) */}
-           <div className="h-32 bg-muted/10 rounded-lg border border-border p-4 flex items-center gap-2 overflow-x-auto">
-              <span className="text-muted-foreground text-xs pl-2">Recent functionality coming soon...</span>
+           {/* History Gallery */}
+           <div className="h-[300px] min-h-0">
+              <HistoryGallery key={historyKey} />
            </div>
         </div>
       </div>
