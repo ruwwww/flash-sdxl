@@ -1,0 +1,1 @@
+this project fe is intialized from starter kit
