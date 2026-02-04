@@ -1,4 +1,12 @@
-# SDXL Server Specifications (Not finalized and approved yet)
+# SDXL Server Specifications
+
+> **⚠️ DEPRECATED:** This document has been superseded by the comprehensive [SDXL Backend API Specification](../SDXL_BACKEND_API_SPECIFICATION.md) located in the root directory.
+> 
+> **Please refer to `/SDXL_BACKEND_API_SPECIFICATION.md` for the complete and up-to-date specification.**
+
+---
+
+## Historical Notes (For Reference Only)
 
 ## Overview
 This component is a high-performance Python application containerized with Docker. It serves as the "Backend for Frontend's Worker". It is responsible for GPU memory management, Model compilation, Inference, and Image Upload.
