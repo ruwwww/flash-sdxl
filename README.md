@@ -98,7 +98,8 @@ Websites started using this template:
 
 This project includes a comprehensive specification for developing an SDXL backend server that integrates with the Flash-SDXL web application.
 
-📄 **[SDXL Backend API Specification](SDXL_BACKEND_API_SPECIFICATION.md)**
+📄 **[SDXL Backend API Specification](SDXL_BACKEND_API_SPECIFICATION.md)** - Complete technical specification  
+🚀 **[SDXL Quick Start Guide](SDXL_QUICK_START.md)** - Fast implementation guide
 
 The specification includes:
 - Complete HTTP API endpoints and webhook protocols
