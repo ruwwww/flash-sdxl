@@ -94,6 +94,25 @@ Websites started using this template:
 
 - [Add yours](https://github.com/michaeltroya/supa-next-starter/edit/main/README.md)
 
+## SDXL Backend Integration
+
+This project includes a comprehensive specification for developing an SDXL backend server that integrates with the Flash-SDXL web application.
+
+📄 **[SDXL Backend API Specification](SDXL_BACKEND_API_SPECIFICATION.md)** - Complete technical specification  
+🚀 **[SDXL Quick Start Guide](SDXL_QUICK_START.md)** - Fast implementation guide
+
+The specification includes:
+- Complete HTTP API endpoints and webhook protocols
+- Request/response schemas and data formats
+- Image generation pipeline details
+- Storage integration (S3/MinIO)
+- Queue and priority management
+- Security and authentication requirements
+- Performance optimization guidelines
+- Deployment configuration examples
+
+Whether you're implementing the backend in Python, Go, Rust, or any other language, this specification provides all the necessary details for full compatibility with the Flash-SDXL application.
+
 # Documentation
 
 ### Requirements
